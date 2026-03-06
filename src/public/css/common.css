@@ -1,0 +1,172 @@
+/* ヘッダー */
+.header {
+    background-color: #000;
+}
+
+.header__inner {
+    margin: 0 auto;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 左：ロゴ */
+.header__left {
+    flex: 1;
+}
+
+/* 右：ボタン群 */
+.header__right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.header__right > div {
+    display: flex;
+    gap: 10px;
+}
+
+/* ボタン */
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    height: 50px;
+    padding: 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.button_black {
+    background: #000;
+    color: #fff;
+}
+
+.button_white {
+    background: #fff;
+    color: #000;
+}
+
+.button_gray {
+    margin: 0 auto;
+    background: #d9d9d9;
+    color: #000;
+    border: 1px solid #000;
+}
+
+.button_blue {
+    display: inline-block;
+    background: #fff;
+    color: #0174cc;
+    text-decoration: none;
+    margin-top: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+
+/* 非表示 */
+.is-hidden {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* フォーム */
+.content {
+    margin: 50px auto 30px;
+    max-width: 1230px;
+}
+
+.content-title {
+    text-align: center;
+}
+
+.content-form {
+    margin: 0 auto;
+    text-align: center;
+}
+
+.form {
+    margin: 0 auto;
+    width: 70%;
+}
+
+.form__group {
+    margin-bottom: 30px;
+}
+
+.form__group-title {
+    text-align: left;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    padding: 10px;
+    width: 100%;
+    border: 1px solid #b9b9b9;
+    border-radius: 3px;
+    appearance: none;
+}
+
+.form-button {
+    margin-top: 100px;
+}
+
+/* エラーメッセージ */
+.form-error {
+    list-style: none;
+    padding: 0;
+    font-size: 14px;
+    color: #ff0000;
+    text-align: left;
+    margin: 5px 0 0 0;
+    line-height: 1.4;
+}
+
+.form-error li::before {
+    content: "・";
+}
+
+/* 位置・サイズ */
+.tac {
+    text-align: center;
+}
+
+.mt20 {
+    margin-top: 20px;
+}
+
+.mt30 {
+    margin-top: 30px;
+}
+
+.mt50 {
+    margin-top: 50px;
+}
+
+.mb30 {
+    margin-bottom: 30px;
+}
+
+.w100 {
+    width: 100%;
+}
+
+.w30 {
+    width: 30%;
+}
+
+/* aタグ */
+.no-link {
+    text-decoration: none;
+    color: inherit;
+}
