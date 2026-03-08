@@ -1,0 +1,40 @@
+body {
+    background-color: #f0eff2;
+}
+
+p {
+    margin: 0;
+}
+
+.status {
+    padding: 5px 20px;
+    border-radius: 30px;
+    background: #c8c8c8;
+    color: #696969;
+    text-align: center;
+    display: inline-block;
+    font-size: 14px;
+}
+
+.date {
+    margin-top: 20px;
+    font-size: 26px;
+}
+
+.clock {
+    margin-top: 10px;
+    font-size: 60px;
+    font-weight: bold;
+}
+
+.button-position {
+    margin-top: 50px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.msg {
+    margin-top: 50px;
+    font-weight: bold;
+}

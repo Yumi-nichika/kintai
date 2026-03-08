@@ -60,7 +60,7 @@ class FortifyServiceProvider extends ServiceProvider
                 // }
 
                 // 認証済み
-                return redirect('/');
+                return redirect('/attendance');
             }
         });
 

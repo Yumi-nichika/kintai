@@ -14,4 +14,12 @@ use App\Http\Controllers\AttendanceController;
 |
 */
 
-Route::get('/', [AttendanceController::class, 'index']);
+//Route::get('/', [AttendanceController::class, 'index']);
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/attendance', [AttendanceController::class, 'index']);
+    Route::post('/attendance/start', [AttendanceController::class, 'start']);
+    Route::post('/attendance/end', [AttendanceController::class, 'end']);
+    Route::post('/attendance/break/start', [AttendanceController::class, 'breakStart']);
+    Route::post('/attendance/break/end', [AttendanceController::class, 'breakEnd']);
+});

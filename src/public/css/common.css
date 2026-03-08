@@ -71,7 +71,6 @@
     cursor: pointer;
 }
 
-
 /* 非表示 */
 .is-hidden {
     visibility: hidden;
@@ -90,11 +89,11 @@
     width: 70%;
 }
 
-.form__group {
+.group {
     margin-bottom: 30px;
 }
 
-.form__group-title {
+.group-title {
     text-align: left;
     font-weight: bold;
 }

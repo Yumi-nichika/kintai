@@ -19,7 +19,7 @@ class RouteServiceProvider extends ServiceProvider
      */
 
     //ログイン後のリダイレクト先
-    public const HOME = '/';
+    public const HOME = '/attendance';
 
     /**
      * The controller namespace for the application.
