@@ -19,6 +19,7 @@
                 </a>
             </div>
 
+            @if (Auth::check())
             <div class="header__right">
                 <!-- 一般ユーザー用 -->
                 <a class="button button_black" href="">勤怠</a>
@@ -35,8 +36,8 @@
                     @csrf
                     <button type="submit" class="button button_black">ログアウト</button>
                 </form>
-
             </div>
+            @endif
         </div>
     </header>
     <main>
