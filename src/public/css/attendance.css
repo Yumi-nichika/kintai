@@ -38,3 +38,70 @@ p {
     margin-top: 50px;
     font-weight: bold;
 }
+
+.list {
+    margin: 0 auto;
+    width: 100%;
+}
+
+.month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    padding: 10px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.month-center {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+}
+
+.month-link {
+    text-decoration: none;
+    color: #b3b3b3;
+    font-size: 14px;
+}
+
+.attendance-table {
+    width: 100%;
+    background: #fff;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.attendance-table th,
+.attendance-table td {
+    width: 16.66%;
+    text-align: center;
+    padding: 10px 20px;
+    color: #737373;
+    border-top: 1px solid #e1e1e1;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.attendance-table th {
+    font-weight: 600;
+}
+
+.attendance-table tr:first-child th {
+    border-top: none;
+}
+
+.attendance-table tr:last-child td {
+    border-bottom: none;
+}
+
+.button_detail{
+    padding:6px 14px;
+    text-decoration:none;
+    color:#000;
+    font-size:14px;
+    font-weight: bold;
+}

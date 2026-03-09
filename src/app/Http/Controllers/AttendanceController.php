@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\BreakTime;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 
 class AttendanceController extends Controller
 {
@@ -23,7 +26,7 @@ class AttendanceController extends Controller
             $isBreaking = $attendance->breaks->whereNull('break_end_time')->isNotEmpty();
         }
 
-        return view('attendance', compact('attendance', 'isBreaking'));
+        return view('attendance.index', compact('attendance', 'isBreaking'));
     }
 
     /**
@@ -34,7 +37,7 @@ class AttendanceController extends Controller
         Attendance::create([
             'user_id' => auth()->id(),
             'work_date' => now(),
-            'start_time' => now(),
+            'start_time' => now()->format('H:i:00'),
         ]);
 
         return back();
@@ -48,7 +51,7 @@ class AttendanceController extends Controller
         $attendance = Attendance::find($request->attendance_id);
 
         $attendance->update([
-            'end_time' => now()
+            'end_time' => now()->format('H:i:00')
         ]);
 
         return back();
@@ -61,7 +64,7 @@ class AttendanceController extends Controller
     {
         BreakTime::create([
             'attendance_id' => $request->attendance_id,
-            'break_start_time' => now()
+            'break_start_time' => now()->format('H:i:00')
         ]);
 
         return back();
@@ -78,9 +81,60 @@ class AttendanceController extends Controller
             ->first();
 
         $break->update([
-            'break_end_time' => now()
-        ]);
+            'break_end_time' => now()->format('H:i:00')
+            ]);
 
         return back();
+    }
+
+    /**
+     * 勤怠一覧画面表示
+     */
+    public function show(Request $request)
+    {
+        $month = $request->month ?? now()->format('Y-m');
+
+        $date = Carbon::createFromFormat('Y-m', $month);
+
+        $start = $date->copy()->startOfMonth();
+        $end   = $date->copy()->endOfMonth();
+        $dates = CarbonPeriod::create($start, $end);
+
+        $attendances = DB::table('attendances as a')
+            ->leftJoin('break_times as b', 'a.id', '=', 'b.attendance_id')
+            ->selectRaw("
+            a.id,
+            a.work_date,
+            a.start_time,
+            a.end_time,
+
+            TIME_FORMAT(
+                SEC_TO_TIME(
+                    IFNULL(SUM(
+                        TIME_TO_SEC(TIMEDIFF(b.break_end_time,b.break_start_time))
+                    ),0)
+                ),
+            '%H:%i') as break_time,
+
+            TIME_FORMAT(
+        SEC_TO_TIME(
+            FLOOR(
+                (
+                    TIME_TO_SEC(TIMEDIFF(a.end_time,a.start_time))
+                    - IFNULL(SUM(
+                        TIME_TO_SEC(TIMEDIFF(b.break_end_time,b.break_start_time))
+                    ),0)
+                ) / 60
+            ) * 60
+        ),
+    '%H:%i') as work_time
+        ")
+            ->where('a.user_id', auth()->id())
+            ->whereBetween('a.work_date', [$start, $end])
+            ->groupBy('a.id')
+            ->get()
+            ->keyBy('work_date');
+
+        return view('attendance.list', compact('dates', 'attendances', 'date'));
     }
 }

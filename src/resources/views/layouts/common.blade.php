@@ -22,8 +22,8 @@
             @if (Auth::check())
             <div class="header__right">
                 <!-- 一般ユーザー用 -->
-                <a class="button button_black" href="">勤怠</a>
-                <a class="button button_black" href="">勤怠一覧</a>
+                <a class="button button_black" href="/attendance">勤怠</a>
+                <a class="button button_black" href="/attendance/list">勤怠一覧</a>
                 <a class="button button_black" href="">申請</a>
 
                 <!-- 管理者用 -->
