@@ -161,3 +161,36 @@ textarea {
     border-radius: 5px;
     appearance: none;
 }
+
+input[type="radio"] {
+    display: none;
+}
+
+.toggle_buttons {
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 50px;
+    gap: 50px;
+    width: auto;
+}
+
+.toggle_buttons label {
+    padding: 10px 0;
+    cursor: pointer;
+}
+
+.toggle_buttons label a {
+    color: #000;
+    text-decoration: none;
+    display: block;
+}
+
+#tab-wait:checked ~ .toggle_buttons label[for="tab-wait"] a,
+#tab-approve:checked ~ .toggle_buttons label[for="tab-approve"] a {
+    font-weight: bold;
+}
+
+.toggle_line {
+    border-bottom: 2px solid #000;
+    margin-bottom: 20px;
+}

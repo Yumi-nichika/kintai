@@ -90,7 +90,7 @@ class AttendanceController extends Controller
     /**
      * 勤怠一覧画面表示
      */
-    public function showList(Request $request)
+    public function showAttendanceList(Request $request)
     {
         $month = $request->month ?? now()->format('Y-m');
 
@@ -128,6 +128,14 @@ class AttendanceController extends Controller
     }
 
     /**
+     * 申請一覧画面表示
+     */
+    public function showRequestList(Request $request)
+    {
+        return view('attendance.request');
+    }
+
+    /**
      * 勤怠詳細画面表示
      */
     public function showDetail($id)
@@ -161,5 +169,5 @@ class AttendanceController extends Controller
     /**
      * 勤怠申請
      */
-    public function apply() {}
+    public function request() {}
 }
