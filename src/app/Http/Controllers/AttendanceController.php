@@ -82,7 +82,7 @@ class AttendanceController extends Controller
 
         $break->update([
             'break_end_time' => now()->format('H:i:00')
-            ]);
+        ]);
 
         return back();
     }
@@ -90,7 +90,7 @@ class AttendanceController extends Controller
     /**
      * 勤怠一覧画面表示
      */
-    public function show(Request $request)
+    public function showList(Request $request)
     {
         $month = $request->month ?? now()->format('Y-m');
 
@@ -98,43 +98,68 @@ class AttendanceController extends Controller
 
         $start = $date->copy()->startOfMonth();
         $end   = $date->copy()->endOfMonth();
+
         $dates = CarbonPeriod::create($start, $end);
 
+
+        /* 休憩時間を先に合計 */
+        $breaks = DB::table('break_times')
+            ->selectRaw("attendance_id,
+            SUM(TIME_TO_SEC(TIMEDIFF(break_end_time, break_start_time))) as break_sec")
+            ->groupBy('attendance_id');
+
+
         $attendances = DB::table('attendances as a')
-            ->leftJoin('break_times as b', 'a.id', '=', 'b.attendance_id')
-            ->selectRaw("
-            a.id,
+            ->leftJoinSub($breaks, 'b', function ($join) {
+                $join->on('a.id', '=', 'b.attendance_id');
+            })
+            ->selectRaw("a.id,
             a.work_date,
             a.start_time,
             a.end_time,
-
-            TIME_FORMAT(
-                SEC_TO_TIME(
-                    IFNULL(SUM(
-                        TIME_TO_SEC(TIMEDIFF(b.break_end_time,b.break_start_time))
-                    ),0)
-                ),
-            '%H:%i') as break_time,
-
-            TIME_FORMAT(
-        SEC_TO_TIME(
-            FLOOR(
-                (
-                    TIME_TO_SEC(TIMEDIFF(a.end_time,a.start_time))
-                    - IFNULL(SUM(
-                        TIME_TO_SEC(TIMEDIFF(b.break_end_time,b.break_start_time))
-                    ),0)
-                ) / 60
-            ) * 60
-        ),
-    '%H:%i') as work_time
-        ")
+            TIME_FORMAT(SEC_TO_TIME(IFNULL(b.break_sec,0)),'%k:%i') as break_time,
+            TIME_FORMAT(SEC_TO_TIME(FLOOR((TIME_TO_SEC(TIMEDIFF(a.end_time,a.start_time)) - IFNULL(b.break_sec,0)) / 60) * 60),'%k:%i') as work_time")
             ->where('a.user_id', auth()->id())
             ->whereBetween('a.work_date', [$start, $end])
-            ->groupBy('a.id')
             ->get()
             ->keyBy('work_date');
 
         return view('attendance.list', compact('dates', 'attendances', 'date'));
     }
+
+    /**
+     * 勤怠詳細画面表示
+     */
+    public function showDetail($id)
+    {
+        $attendance = DB::table('attendances as a')
+            ->select(
+                'a.id',
+                'a.work_date',
+                'a.start_time',
+                'a.end_time',
+                'a.note',
+                'u.name'
+            )
+            ->join('users as u', 'a.user_id', '=', 'u.id')
+            ->where('a.id', $id)
+            ->first();
+
+
+        $breaks = DB::table('break_times')
+            ->select(
+                'id',
+                'break_start_time',
+                'break_end_time'
+            )
+            ->where('attendance_id', $id)
+            ->get();
+
+        return view('attendance.detail', compact('attendance', 'breaks'));
+    }
+
+    /**
+     * 勤怠申請
+     */
+    public function apply() {}
 }

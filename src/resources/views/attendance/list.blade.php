@@ -12,27 +12,25 @@
 @section('main')
 <div class="content">
     <div class="list">
-        <div class="month-nav">
+        <h2 class="heading">勤怠一覧</h2>
 
+        <div class="month-nav">
             <a class="month-link" href="?month={{ $date->copy()->subMonth()->format('Y-m') }}">
                 ← 前月
             </a>
-
             <div class="month-center">
                 <span class="material-icons">calendar_month</span>
                 <span class="month-text">
                     {{ $date->format('Y/m') }}
                 </span>
             </div>
-
             <a class="month-link" href="?month={{ $date->copy()->addMonth()->format('Y-m') }}">
                 翌月 →
             </a>
-
         </div>
 
 
-        <table class="attendance-table">
+        <table class="attendance-list-table">
             <tr>
                 <th>日付</th>
                 <th>出勤</th>
@@ -59,10 +57,10 @@
                     {{ $attendance ? mb_convert_kana(substr($attendance->end_time,0,5),'N') : '' }}
                 </td>
                 <td>
-                    {{ $attendance ? mb_convert_kana(\Carbon\Carbon::createFromFormat('H:i',$attendance->break_time)->format('G:i'),'N') : '' }}
+                    {{ $attendance ? mb_convert_kana($attendance->break_time,'N') : '' }}
                 </td>
                 <td>
-                    {{ $attendance ? mb_convert_kana(\Carbon\Carbon::createFromFormat('H:i',$attendance->work_time)->format('G:i'),'N') : '' }}
+                    {{ $attendance ? mb_convert_kana($attendance->work_time,'N') : '' }}
                 </td>
                 <td>
                     @if($attendance)

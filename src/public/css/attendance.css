@@ -67,7 +67,7 @@ p {
     font-size: 14px;
 }
 
-.attendance-table {
+.attendance-list-table {
     width: 100%;
     background: #fff;
     border-collapse: separate;
@@ -76,8 +76,8 @@ p {
     overflow: hidden;
 }
 
-.attendance-table th,
-.attendance-table td {
+.attendance-list-table th,
+.attendance-list-table td {
     width: 16.66%;
     text-align: center;
     padding: 10px 20px;
@@ -86,22 +86,78 @@ p {
     border-bottom: 1px solid #e1e1e1;
 }
 
-.attendance-table th {
+.attendance-list-table th {
     font-weight: 600;
 }
 
-.attendance-table tr:first-child th {
+.attendance-list-table tr:first-child th {
     border-top: none;
 }
 
-.attendance-table tr:last-child td {
+.attendance-list-table tr:last-child td {
     border-bottom: none;
 }
 
-.button_detail{
-    padding:6px 14px;
-    text-decoration:none;
-    color:#000;
-    font-size:14px;
+.button_detail {
+    padding: 6px 14px;
+    text-decoration: none;
+    color: #000;
+    font-size: 14px;
     font-weight: bold;
+}
+
+.attendance-detail-table {
+    width: 100%;
+    background: #fff;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.attendance-detail-table th {
+    text-align: left;
+    padding: 30px 40px;
+    color: #737373;
+    border-top: 1px solid #e1e1e1;
+    border-bottom: 1px solid #e1e1e1;
+    font-weight: 600;
+}
+
+.attendance-detail-table td {
+    text-align: left;
+    padding: 30px 20px;
+    border-top: 1px solid #e1e1e1;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.attendance-detail-table tr:first-child th {
+    border-top: none;
+}
+
+.attendance-detail-table tr:last-child td {
+    border-bottom: none;
+}
+
+.input_texts {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+input[type="text"] {
+    text-align: center;
+    padding: 10px;
+    width: 20%;
+    border: 1px solid #e1e1e1;
+    border-radius: 5px;
+}
+
+textarea {
+    height: 100px;
+    padding: 10px;
+    width: 80%;
+    border: 1px solid #e1e1e1;
+    border-radius: 5px;
+    appearance: none;
 }

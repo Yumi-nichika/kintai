@@ -14,7 +14,7 @@ use App\Http\Controllers\AttendanceController;
 |
 */
 
-//Route::get('/', [AttendanceController::class, 'index']);
+Route::redirect('/', '/login');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/attendance', [AttendanceController::class, 'index']);
@@ -23,5 +23,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/attendance/break/start', [AttendanceController::class, 'breakStart']);
     Route::post('/attendance/break/end', [AttendanceController::class, 'breakEnd']);
 
-    Route::get('/attendance/list', [AttendanceController::class, 'show']);
+    Route::get('/attendance/list', [AttendanceController::class, 'showList']);
+    Route::get('/attendance/detail/{id}', [AttendanceController::class, 'showDetail']);
+    Route::post('/attendance/detail/{id}', [AttendanceController::class, 'apply']);
 });

@@ -71,10 +71,18 @@
     cursor: pointer;
 }
 
-/* 非表示 */
-.is-hidden {
-    visibility: hidden;
-    pointer-events: none;
+.button-area{
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+}
+
+/* 見出し */
+.heading {
+    padding: 0.25em 0.5em;
+    background: transparent;
+    border-left: solid 5px #000;
+    text-align: left;
 }
 
 /* フォーム */
