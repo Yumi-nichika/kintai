@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateBreaksTable extends Migration
+class CreateAttendanceRequestBreakTimesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,12 @@ class CreateBreaksTable extends Migration
      */
     public function up()
     {
-        Schema::create('break_times', function (Blueprint $table) {
+        Schema::create('attendance_request_break_times', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('attendance_id');
-            $table->time('break_start_time')->nullable();
-            $table->time('break_end_time')->nullable();
+            $table->foreignId('attendance_request_id');
+            $table->foreignId('break_time_id');
+            $table->time('request_break_start_time');
+            $table->time('request_break_end_time');
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ class CreateBreaksTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('break_times');
+        Schema::dropIfExists('attendance_request_break_times');
     }
 }

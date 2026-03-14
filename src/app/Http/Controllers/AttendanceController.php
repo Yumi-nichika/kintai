@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\BreakTime;
+use App\Http\Requests\AttendanceRequest;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -146,7 +147,6 @@ class AttendanceController extends Controller
                 'a.work_date',
                 'a.start_time',
                 'a.end_time',
-                'a.note',
                 'u.name'
             )
             ->join('users as u', 'a.user_id', '=', 'u.id')
@@ -169,5 +169,5 @@ class AttendanceController extends Controller
     /**
      * 勤怠申請
      */
-    public function request() {}
+    public function request(AttendanceRequest $request) {}
 }
