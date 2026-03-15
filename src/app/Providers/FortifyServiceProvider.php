@@ -3,28 +3,25 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
-use App\Actions\Fortify\ResetUserPassword;
-use App\Actions\Fortify\UpdateUserPassword;
-use App\Actions\Fortify\UpdateUserProfileInformation;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
-use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
 use App\Http\Requests\LoginRequest;
+use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
 use Laravel\Fortify\Contracts\LoginResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Responses\LoginResponse as CustomLoginResponse;
+
 
 class FortifyServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
      */
-    public function register(): void
+    public function register()
     {
-        //
+        $this->app->singleton(LoginResponse::class, CustomLoginResponse::class);
     }
 
     /**
@@ -37,7 +34,7 @@ class FortifyServiceProvider extends ServiceProvider
             return view('auth.register');
         });
 
-        //登録画面処理（バリデーション・DB登録）
+        //登録画面処理（バリデーション・DB登録・認証メール送信）
         Fortify::createUsersUsing(CreateNewUser::class);
 
         //「/login」でログイン画面を開く
@@ -47,22 +44,6 @@ class FortifyServiceProvider extends ServiceProvider
 
         //ログイン時のバリデーションをカスタム
         $this->app->bind(FortifyLoginRequest::class, LoginRequest::class);
-
-        // ログイン成功時のリダイレクト先をカスタマイズ
-        $this->app->instance(LoginResponse::class, new class implements LoginResponse {
-            public function toResponse($request)
-            {
-                $user = Auth::user();
-
-                // メール認証が終わっていない場合
-                // if ($user && !$user->hasVerifiedEmail()) {
-                //     return redirect('/email-sent');
-                // }
-
-                // 認証済み
-                return redirect('/attendance');
-            }
-        });
 
         //連続ログインブロック
         RateLimiter::for('login', function (Request $request) {
