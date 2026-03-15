@@ -67,7 +67,7 @@
 
         <!-- 退勤済み -->
         @else
-        <p class="msg">お疲れ様でした。</p>
+        <p class="msg_index">お疲れ様でした。</p>
         @endif
     </div>
 </div>

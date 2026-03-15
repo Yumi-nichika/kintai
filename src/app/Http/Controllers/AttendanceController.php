@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\BreakTime;
+use App\Models\Apply;
+use App\Models\ApplyBreakTime;
 use App\Http\Requests\AttendanceRequest;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -111,15 +113,15 @@ class AttendanceController extends Controller
 
 
         $attendances = DB::table('attendances as a')
-            ->leftJoinSub($breaks, 'b', function ($join) {
-                $join->on('a.id', '=', 'b.attendance_id');
-            })
             ->selectRaw("a.id,
             a.work_date,
             a.start_time,
             a.end_time,
             TIME_FORMAT(SEC_TO_TIME(IFNULL(b.break_sec,0)),'%k:%i') as break_time,
             TIME_FORMAT(SEC_TO_TIME(FLOOR((TIME_TO_SEC(TIMEDIFF(a.end_time,a.start_time)) - IFNULL(b.break_sec,0)) / 60) * 60),'%k:%i') as work_time")
+            ->leftJoinSub($breaks, 'b', function ($join) {
+                $join->on('a.id', '=', 'b.attendance_id');
+            })
             ->where('a.user_id', auth()->id())
             ->whereBetween('a.work_date', [$start, $end])
             ->get()
@@ -131,9 +133,11 @@ class AttendanceController extends Controller
     /**
      * 申請一覧画面表示
      */
-    public function showRequestList(Request $request)
+    public function showApplyList(Request $request)
     {
-        return view('attendance.request');
+        $applies = Apply::with('user', 'attendance')->where('user_id', auth()->id())->get();
+
+        return view('attendance.apply', compact('applies'));
     }
 
     /**
@@ -141,33 +145,76 @@ class AttendanceController extends Controller
      */
     public function showDetail($id)
     {
-        $attendance = DB::table('attendances as a')
-            ->select(
-                'a.id',
-                'a.work_date',
-                'a.start_time',
-                'a.end_time',
-                'u.name'
-            )
-            ->join('users as u', 'a.user_id', '=', 'u.id')
-            ->where('a.id', $id)
-            ->first();
+        $flg = 0;
 
-
-        $breaks = DB::table('break_times')
-            ->select(
-                'id',
-                'break_start_time',
-                'break_end_time'
-            )
+        $attendance = Apply::with('user')
+            ->selectRaw("attendance_id as id, user_id, apply_start_time as start_time, apply_end_time as end_time, apply_note")
             ->where('attendance_id', $id)
-            ->get();
+            ->where('status', 0)
+            ->orderBy('created_at', 'desc')->first();
 
-        return view('attendance.detail', compact('attendance', 'breaks'));
+        //承認待ちの申請あり
+        if ($attendance) {
+            $flg = 1;
+
+            $breaks = ApplyBreakTime::selectRaw("apply_break_start_time as break_start_time, apply_break_end_time as break_end_time")
+                ->where('apply_id', $attendance->id)
+                ->orderBy('break_time_id')
+                ->get();
+        }
+
+        //承認待ちの申請なし
+        else {
+            $attendance = Attendance::with('user')
+                ->where('id', $id)
+                ->first();
+
+            $breaks = BreakTime::where('attendance_id', $id)
+                ->orderBy('id')
+                ->get();
+        }
+
+
+        return view('attendance.detail', compact('attendance', 'breaks', 'flg'));
     }
 
     /**
      * 勤怠申請
      */
-    public function request(AttendanceRequest $request) {}
+    public function store(AttendanceRequest $request, $id)
+    {
+        //appliesテーブルに登録するデータ
+        $apply_data = $request->only([
+            'apply_start_time',
+            'apply_end_time',
+            'apply_note'
+        ]);
+
+        $apply_data['user_id'] = auth()->id();
+        $apply_data['attendance_id'] = $id;
+
+        //appliesテーブルに保存、id取得
+        $apply = Apply::create($apply_data);
+        $apply_id = $apply->id;
+
+        $break_ids = $request['break_ids'];
+        $apply_break_start_times = $request['apply_break_start_times'];
+        $apply_break_end_times = $request['apply_break_end_times'];
+
+        //apply_break_timesテーブルに保存
+        foreach ($break_ids as $index => $break_time_id) {
+            $break_data = [];
+
+            $break_data = [
+                'apply_id' => $apply_id,
+                'break_time_id' => $break_time_id,
+                'apply_break_start_time' => $apply_break_start_times[$index],
+                'apply_break_end_time' => $apply_break_end_times[$index],
+            ];
+
+            ApplyBreakTime::create($break_data);
+        }
+
+        return redirect('/stamp_correction_request/list');
+    }
 }

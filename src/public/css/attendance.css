@@ -34,7 +34,7 @@ p {
     gap: 20px;
 }
 
-.msg {
+.msg_index {
     margin-top: 50px;
     font-weight: bold;
 }
@@ -65,6 +65,7 @@ p {
     text-decoration: none;
     color: #b3b3b3;
     font-size: 14px;
+    font-weight: bold;
 }
 
 .attendance-list-table {
@@ -116,6 +117,7 @@ p {
 }
 
 .attendance-detail-table th {
+    width: 30%;
     text-align: left;
     padding: 30px 40px;
     color: #737373;
@@ -193,4 +195,27 @@ input[type="radio"] {
 .toggle_line {
     border-bottom: 2px solid #000;
     margin-bottom: 20px;
+}
+
+/* 一覧（初期は非表示） */
+.toggle_contents .list {
+    display: none;
+}
+
+/* 表示切り替え */
+#tab-wait:checked ~ .toggle_contents .wait {
+    display: block;
+}
+
+#tab-approve:checked ~ .toggle_contents .approve {
+    display: block;
+}
+
+.note {
+    white-space: pre-wrap;
+}
+
+.msg_detail {
+    color: #f87779;
+    font-weight: bold;
 }

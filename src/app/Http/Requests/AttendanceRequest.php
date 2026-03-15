@@ -15,26 +15,26 @@ class AttendanceRequest extends FormRequest
     public function rules()
     {
         return [
-            'request_start_time' => ['required', 'date_format:H:i'],
-            'request_end_time' => ['required', 'date_format:H:i'],
+            'apply_start_time' => ['required', 'date_format:H:i'],
+            'apply_end_time' => ['required', 'date_format:H:i'],
 
-            'request_break_start_time.*' => ['nullable', 'date_format:H:i'],
-            'request_break_end_time.*' => ['nullable', 'date_format:H:i'],
+            'apply_break_start_times.*' => ['nullable', 'date_format:H:i'],
+            'apply_break_end_times.*' => ['nullable', 'date_format:H:i'],
 
-            'request_note' => ['required'],
+            'apply_note' => ['required'],
         ];
     }
 
     public function messages()
     {
         return [
-            'request_start_time.required' => '出勤時間を記入してください',
-            'request_start_time.date_format' => '出勤時間は半角で「00:00」形式で記入してください',
-            'request_end_time.required' => '退勤時間を記入してください',
-            'request_end_time.date_format' => '退勤時間は半角で「00:00」形式で記入してください',
-            'request_break_start_time.*.date_format' => '休憩開始時間は半角で「00:00」形式で記入してください',
-            'request_break_end_time.*.date_format' => '休憩終了時間は半角で「00:00」形式で記入してください',
-            'request_note.required' => '備考を記入してください',
+            'apply_start_time.required' => '出勤時間を記入してください',
+            'apply_start_time.date_format' => '出勤時間は半角で「00:00」形式で記入してください',
+            'apply_end_time.required' => '退勤時間を記入してください',
+            'apply_end_time.date_format' => '退勤時間は半角で「00:00」形式で記入してください',
+            'apply_break_start_times.*.date_format' => '休憩開始時間は半角で「00:00」形式で記入してください',
+            'apply_break_end_times.*.date_format' => '休憩終了時間は半角で「00:00」形式で記入してください',
+            'apply_note.required' => '備考を記入してください',
         ];
     }
 
@@ -42,11 +42,11 @@ class AttendanceRequest extends FormRequest
     {
         $validator->after(function ($validator) {
 
-            $start = Carbon::parse($this->request_start_time);
-            $end   = Carbon::parse($this->request_end_time);
+            $start = Carbon::parse($this->apply_start_time);
+            $end   = Carbon::parse($this->apply_end_time);
 
-            $breakStarts = $this->request_break_start_time ?? [];
-            $breakEnds   = $this->request_break_end_time ?? [];
+            $breakStarts = $this->apply_break_start_times ?? [];
+            $breakEnds   = $this->apply_break_end_times ?? [];
 
             $breakPeriods = [];
 
@@ -62,7 +62,7 @@ class AttendanceRequest extends FormRequest
                 */
                 if ($breakStart && !$breakEnd) {
                     $validator->errors()->add(
-                        "request_break_end_time.$i",
+                        "apply_break_end_times.$i",
                         '休憩終了時間を入力してください'
                     );
                     continue;
@@ -70,7 +70,7 @@ class AttendanceRequest extends FormRequest
 
                 if (!$breakStart && $breakEnd) {
                     $validator->errors()->add(
-                        "request_break_start_time.$i",
+                        "apply_break_start_times.$i",
                         '休憩開始時間を入力してください'
                     );
                     continue;
@@ -102,7 +102,7 @@ class AttendanceRequest extends FormRequest
     {
         if ($start->gt($end)) {
             $validator->errors()->add(
-                'request_start_time',
+                'apply_start_time',
                 '出勤時間もしくは退勤時間が不適切な値です'
             );
         }
@@ -115,7 +115,7 @@ class AttendanceRequest extends FormRequest
     {
         if (count(array_filter($breakStarts)) === 0) {
             $validator->errors()->add(
-                'request_break_start_time.0',
+                'apply_break_start_times.0',
                 '休憩時間を記入してください'
             );
         }
@@ -128,7 +128,7 @@ class AttendanceRequest extends FormRequest
     {
         if ($start->gt($end)) {
             $validator->errors()->add(
-                "request_break_end_time.$index",
+                "apply_break_end_times.$index",
                 '休憩時間が不適切な値です'
             );
         }
@@ -142,7 +142,7 @@ class AttendanceRequest extends FormRequest
         // 休憩開始 < 出勤時間 || 休憩開始 > 退勤時間
         if ($breakStart->lt($workStart) || $breakStart->gt($workEnd)) {
             $validator->errors()->add(
-                "request_break_start_time.$index",
+                "apply_break_start_times.$index",
                 '休憩時間が不適切な値です'
             );
         }
@@ -150,7 +150,7 @@ class AttendanceRequest extends FormRequest
         // 休憩終了 > 退勤時間
         if ($breakEnd->gt($workEnd)) {
             $validator->errors()->add(
-                "request_break_end_time.$index",
+                "apply_break_end_times.$index",
                 '休憩時間もしくは退勤時間が不適切な値です'
             );
         }
@@ -171,7 +171,7 @@ class AttendanceRequest extends FormRequest
 
                 if ($start1->lt($end2) && $start2->lt($end1)) {
                     $validator->errors()->add(
-                        'request_break_start_time.' . $j,
+                        'apply_break_start_times.' . $j,
                         '休憩時間が重複しています'
                     );
                 }

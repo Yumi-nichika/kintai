@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateAttendanceRequestBreakTimesTable extends Migration
+class CreateAppliesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,14 @@ class CreateAttendanceRequestBreakTimesTable extends Migration
      */
     public function up()
     {
-        Schema::create('attendance_request_break_times', function (Blueprint $table) {
+        Schema::create('applies', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('attendance_request_id');
-            $table->foreignId('break_time_id');
-            $table->time('request_break_start_time');
-            $table->time('request_break_end_time');
+            $table->foreignId('user_id');
+            $table->foreignId('attendance_id');
+            $table->boolean('status')->default(false);
+            $table->time('apply_start_time');
+            $table->time('apply_end_time');
+            $table->text('apply_note');
             $table->timestamps();
         });
     }
@@ -30,6 +32,6 @@ class CreateAttendanceRequestBreakTimesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('attendance_request_break_times');
+        Schema::dropIfExists('applies');
     }
 }
