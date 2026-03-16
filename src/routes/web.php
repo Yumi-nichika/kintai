@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
@@ -49,4 +51,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/attendance/detail/{id}', [AttendanceController::class, 'showDetail']);
     Route::post('/attendance/detail/{id}', [AttendanceController::class, 'store']);
+});
+
+
+
+Route::prefix('admin')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/attendance/list', [AdminAttendanceController::class, 'showAttendanceList']);
+
+    Route::get('/attendance/{id}', [AdminAttendanceController::class, 'showDetail']);
+
+    Route::get('/staff/list', [AdminAttendanceController::class, 'showStaffList']);
 });

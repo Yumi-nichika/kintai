@@ -14,22 +14,22 @@
     <header class="header">
         <div class="header__inner">
             <div class="header__left">
-                <a href="/">
-                    <img src="{{ asset('img/logo.png') }}">
-                </a>
+                <img src="{{ asset('img/logo.png') }}">
             </div>
 
-            @if (Auth::check())
+            @auth
             <div class="header__right">
-                <!-- 一般ユーザー用 -->
+                @if (Auth::user()->is_admin)
+                <!-- 管理者 -->
+                <a class="button button_black" href="/admin/attendance/list">勤怠一覧</a>
+                <a class="button button_black" href="/admin/staff/list">スタッフ一覧</a>
+                <a class="button button_black" href="/stamp_correction_request/list">申請一覧</a>
+                @else
+                <!-- 一般ユーザー -->
                 <a class="button button_black" href="/attendance">勤怠</a>
                 <a class="button button_black" href="/attendance/list">勤怠一覧</a>
                 <a class="button button_black" href="/stamp_correction_request/list">申請</a>
-
-                <!-- 管理者用 -->
-                <!-- <a class="button button_black" href="">勤怠一覧</a>
-                <a class="button button_black" href="">スタッフ一覧</a>
-                <a class="button button_black" href="">申請一覧</a> -->
+                @endif
 
                 <!-- 共通 -->
                 <form method="POST" action="/logout">
@@ -37,7 +37,7 @@
                     <button type="submit" class="button button_black">ログアウト</button>
                 </form>
             </div>
-            @endif
+            @endauth
         </div>
     </header>
     <main>
