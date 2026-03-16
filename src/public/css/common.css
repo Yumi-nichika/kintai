@@ -54,6 +54,11 @@
     color: #000;
 }
 
+.button_dark {
+    background-color: #696969;
+    color: #fff;
+}
+
 .button_gray {
     width: 160px;
     margin: 0 auto;

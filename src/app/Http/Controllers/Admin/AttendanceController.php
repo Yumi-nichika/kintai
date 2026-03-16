@@ -94,4 +94,40 @@ class AttendanceController extends Controller
         $users = User::where('is_admin', 0)->get();
         return view('admin.staff-list', compact('users'));
     }
+
+    /**
+     * 申請一覧画面表示
+     */
+    public function showApplyList()
+    {
+        $applies = Apply::with('user', 'attendance')->get();
+        return view('admin.apply-list', compact('applies'));
+    }
+
+    /**
+     * 修正申請承認画面
+     */
+    public function showApprove($attendance_correct_request_id)
+    {
+        $attendance = Apply::with('user')
+            ->selectRaw("id, user_id, apply_start_time as start_time, apply_end_time as end_time, apply_note, status")
+            ->where('id', $attendance_correct_request_id)
+            ->first();
+
+        $breaks = ApplyBreakTime::selectRaw("apply_break_start_time as break_start_time, apply_break_end_time as break_end_time")
+            ->where('apply_id', $attendance_correct_request_id)
+            ->orderBy('break_time_id')
+            ->get();
+
+
+        return view('admin.approve', compact('attendance', 'breaks'));
+    }
+
+    /**
+     * 承認
+     */
+    public function approve($attendance_correct_request_id)
+    {
+
+    }
 }

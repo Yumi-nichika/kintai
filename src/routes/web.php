@@ -47,7 +47,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/attendance/break/end', [AttendanceController::class, 'breakEnd']);
 
     Route::get('/attendance/list', [AttendanceController::class, 'showAttendanceList']);
-    Route::get('/stamp_correction_request/list', [AttendanceController::class, 'showApplyList']);
 
     Route::get('/attendance/detail/{id}', [AttendanceController::class, 'showDetail']);
     Route::post('/attendance/detail/{id}', [AttendanceController::class, 'store']);
@@ -66,4 +65,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/attendance/{id}', [AdminAttendanceController::class, 'showDetail']);
 
     Route::get('/staff/list', [AdminAttendanceController::class, 'showStaffList']);
+});
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminAttendanceController::class, 'showApprove']);
+    Route::post('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminAttendanceController::class, 'approve']);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/stamp_correction_request/list', [AttendanceController::class, 'showApplyList']);
 });

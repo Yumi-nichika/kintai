@@ -133,10 +133,15 @@ class AttendanceController extends Controller
     /**
      * 申請一覧画面表示
      */
-    public function showApplyList(Request $request)
+    public function showApplyList()
     {
-        $applies = Apply::with('user', 'attendance')->where('user_id', auth()->id())->get();
+        //管理者なら別コントローラーへ
+        if (auth()->user()->is_admin) {
+            return app(\App\Http\Controllers\Admin\AttendanceController::class)
+                ->showApplyList();
+        }
 
+        $applies = Apply::with('user', 'attendance')->where('user_id', auth()->id())->get();
         return view('attendance.apply', compact('applies'));
     }
 
