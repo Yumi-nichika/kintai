@@ -21,7 +21,7 @@
             </tr>
             <tr>
                 <th>日付</th>
-                <td>{{ \Carbon\Carbon::parse($attendance->work_date)->isoFormat('YYYY年M月D日') }}</td>
+                <td>{{ \Carbon\Carbon::parse($attendance->attendance->work_date)->isoFormat('YYYY年M月D日') }}</td>
             </tr>
             <tr>
                 <th>出勤・退勤</th>

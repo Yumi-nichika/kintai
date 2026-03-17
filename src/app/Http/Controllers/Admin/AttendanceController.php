@@ -56,7 +56,7 @@ class AttendanceController extends Controller
         $flg = 0;
 
         $attendance = Apply::with('user')
-            ->selectRaw("attendance_id as id, user_id, apply_start_time as start_time, apply_end_time as end_time, apply_note")
+            ->selectRaw("attendance_id as id, user_id, apply_start_time as start_time, apply_end_time as end_time, apply_note as note")
             ->where('attendance_id', $id)
             ->where('status', 0)
             ->orderBy('created_at', 'desc')->first();
@@ -109,8 +109,8 @@ class AttendanceController extends Controller
      */
     public function showApprove($attendance_correct_request_id)
     {
-        $attendance = Apply::with('user')
-            ->selectRaw("id, user_id, apply_start_time as start_time, apply_end_time as end_time, apply_note, status")
+        $attendance = Apply::with('user', 'attendance')
+            ->selectRaw("id, user_id, attendance_id, apply_start_time as start_time, apply_end_time as end_time, apply_note, status")
             ->where('id', $attendance_correct_request_id)
             ->first();
 
@@ -128,6 +128,38 @@ class AttendanceController extends Controller
      */
     public function approve($attendance_correct_request_id)
     {
+        $apply = Apply::find($attendance_correct_request_id);
 
+        $attendance_id = $apply->attendance_id;
+
+        $data = [
+            'start_time' => $apply->apply_start_time,
+            'end_time' => $apply->apply_end_time,
+            'note' => $apply->apply_note,
+        ];
+
+        Attendance::find($attendance_id)->update($data);
+
+        $applyBreaks = ApplyBreakTime::where('apply_id', $attendance_correct_request_id)
+            ->orderBy('break_time_id')
+            ->get();
+
+        foreach ($applyBreaks as $break) {
+            $break_time_id = $break->break_time_id;
+
+            $break_data = [];
+
+            $break_data = [
+                'break_start_time' => $break->apply_break_start_time,
+                'break_end_time' => $break->apply_break_end_time,
+            ];
+
+            BreakTime::find($break_time_id)->update($break_data);
+        }
+
+        $apply->status = 1;
+        $apply->save();
+
+        return redirect('/stamp_correction_request/approve/' . $attendance_correct_request_id);
     }
 }

@@ -153,7 +153,7 @@ class AttendanceController extends Controller
         $flg = 0;
 
         $attendance = Apply::with('user')
-            ->selectRaw("attendance_id as id, user_id, apply_start_time as start_time, apply_end_time as end_time, apply_note")
+            ->selectRaw("attendance_id as id, user_id, apply_start_time as start_time, apply_end_time as end_time, apply_note as note")
             ->where('attendance_id', $id)
             ->where('status', 0)
             ->orderBy('created_at', 'desc')->first();

@@ -88,14 +88,14 @@
                 <th>備考</th>
                 <td>
                     @if(!$flg)
-                    <textarea name="apply_note">{{ old('apply_note') }}</textarea>
+                    <textarea name="apply_note">{{ old('apply_note', $attendance->note) }}</textarea>
                     @error('apply_note')
                     <ul class="error">
                         <li>{{ $message }}</li>
                     </ul>
                     @enderror
                     @else
-                    <p class="note">{{ $attendance->apply_note }}</p>
+                    <p class="note">{{ $attendance->note }}</p>
                     @endif
                 </td>
             </tr>
