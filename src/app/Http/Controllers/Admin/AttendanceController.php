@@ -91,31 +91,29 @@ class AttendanceController extends Controller
      */
     public function update(AttendanceRequest $request, $id)
     {
-        $start_time = $request['apply_start_time'];
-        $end_time = $request['apply_end_time'];
-        $note = $request['apply_note'];
+        Attendance::findOrFail($id)->update([
+            'start_time' => $request['apply_start_time'],
+            'end_time' => $request['apply_end_time'],
+            'note' => $request['apply_note'],
+        ]);
 
-        $data = [
-            'start_time' => $start_time,
-            'end_time' => $end_time,
-            'note' => $note,
-        ];
+        $start_times = $request['apply_break_start_times'];
+        $end_times = $request['apply_break_end_times'];
 
-        Attendance::find($id)->update($data);
+        //既存の休憩全削除
+        BreakTime::where('attendance_id', $id)->delete();
 
-        $break_ids = $request['break_ids'];
-        $apply_break_start_times = $request['apply_break_start_times'];
-        $apply_break_end_times = $request['apply_break_end_times'];
+        foreach ($start_times as $index => $start) {
+            // 空はスキップ（休憩削除）
+            if (!$start || !$end_times[$index]) {
+                continue;
+            }
 
-        foreach ($break_ids as $index => $break_time_id) {
-            $break_data = [];
-
-            $break_data = [
-                'break_start_time' => $apply_break_start_times[$index],
-                'break_end_time' => $apply_break_end_times[$index],
-            ];
-
-            BreakTime::find($break_time_id)->update($break_data);
+            BreakTime::create([
+                'attendance_id' => $id,
+                'break_start_time' => $start,
+                'break_end_time' => $end_times[$index],
+            ]);
         }
 
         return redirect('/admin/attendance/' . $id);
@@ -219,20 +217,21 @@ class AttendanceController extends Controller
         Attendance::find($attendance_id)->update($data);
 
         $applyBreaks = ApplyBreakTime::where('apply_id', $attendance_correct_request_id)
-            ->orderBy('break_time_id')
             ->get();
 
+        //既存の休憩全削除
+        BreakTime::where('attendance_id', $attendance_id)->delete();
+
         foreach ($applyBreaks as $break) {
-            $break_time_id = $break->break_time_id;
+            if (!$break->apply_break_start_time || !$break->apply_break_end_time) {
+                continue;
+            }
 
-            $break_data = [];
-
-            $break_data = [
+            BreakTime::create([
+                'attendance_id' => $attendance_id,
                 'break_start_time' => $break->apply_break_start_time,
                 'break_end_time' => $break->apply_break_end_time,
-            ];
-
-            BreakTime::find($break_time_id)->update($break_data);
+            ]);
         }
 
         $apply->status = 1;

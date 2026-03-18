@@ -84,6 +84,28 @@
                 </td>
             </tr>
             @endforeach
+            @if(!$flg)
+            <tr>
+                <th>休憩{{ count($breaks) == 0 ? '' : count($breaks) + 1 }}</th>
+                <td>
+                    <div class="input_texts">
+                        <input type="text" name="apply_break_start_times[]" value="{{ old('apply_break_start_times.' . count($breaks)) }}">
+                        <span>～</span>
+                        <input type="text" name="apply_break_end_times[]" value="{{ old('apply_break_end_times.' . count($breaks)) }}">
+                    </div>
+                    @error('apply_break_start_times.' . count($breaks))
+                    <ul class="error">
+                        <li>{{ $message }}</li>
+                    </ul>
+                    @enderror
+                    @error('apply_break_end_times.' . count($breaks))
+                    <ul class="error">
+                        <li>{{ $message }}</li>
+                    </ul>
+                    @enderror
+                </td>
+            </tr>
+            @endif
             <tr>
                 <th>備考</th>
                 <td>

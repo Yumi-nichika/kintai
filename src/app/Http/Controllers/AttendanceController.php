@@ -202,18 +202,21 @@ class AttendanceController extends Controller
         $apply = Apply::create($apply_data);
         $apply_id = $apply->id;
 
-        $break_ids = $request['break_ids'];
+        $break_ids = $request['break_ids'] ?? [];
         $apply_break_start_times = $request['apply_break_start_times'];
         $apply_break_end_times = $request['apply_break_end_times'];
 
         //apply_break_timesテーブルに保存
-        foreach ($break_ids as $index => $break_time_id) {
-            $break_data = [];
+        foreach ($apply_break_start_times as $index => $start_time) {
+            // 空行はスキップ（休憩削除）
+            if (!$start_time || !$apply_break_end_times[$index]) {
+                continue;
+            }
 
             $break_data = [
                 'apply_id' => $apply_id,
-                'break_time_id' => $break_time_id,
-                'apply_break_start_time' => $apply_break_start_times[$index],
+                'break_time_id' => $break_ids[$index] ?? null,
+                'apply_break_start_time' => $start_time,
                 'apply_break_end_time' => $apply_break_end_times[$index],
             ];
 
