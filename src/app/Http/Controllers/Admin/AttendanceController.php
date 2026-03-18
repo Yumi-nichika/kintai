@@ -96,6 +96,49 @@ class AttendanceController extends Controller
     }
 
     /**
+     * スタッフ別勤怠一覧画面表示
+     */
+    public function showStaffDetail(Request $request, $id)
+    {
+        $month = $request->month ?? now()->format('Y-m');
+
+        $date = Carbon::createFromFormat('Y-m', $month);
+
+        $start = $date->copy()->startOfMonth();
+        $end   = $date->copy()->endOfMonth();
+
+        $dates = CarbonPeriod::create($start, $end);
+
+
+        /* 休憩時間を先に合計 */
+        $breaks = DB::table('break_times')
+            ->selectRaw("attendance_id,
+            SUM(TIME_TO_SEC(TIMEDIFF(break_end_time, break_start_time))) as break_sec")
+            ->groupBy('attendance_id');
+
+
+        $attendances = DB::table('attendances as a')
+            ->selectRaw("a.id,
+            a.work_date,
+            a.start_time,
+            a.end_time,
+            TIME_FORMAT(SEC_TO_TIME(IFNULL(b.break_sec,0)),'%k:%i') as break_time,
+            TIME_FORMAT(SEC_TO_TIME(FLOOR((TIME_TO_SEC(TIMEDIFF(a.end_time,a.start_time)) - IFNULL(b.break_sec,0)) / 60) * 60),'%k:%i') as work_time")
+            ->leftJoinSub($breaks, 'b', function ($join) {
+                $join->on('a.id', '=', 'b.attendance_id');
+            })
+            ->where('a.user_id', $id)
+            ->whereBetween('a.work_date', [$start, $end])
+            ->get()
+            ->keyBy('work_date');
+
+        $user = User::find($id);
+
+        return view('admin.staff-detail', compact('dates', 'attendances', 'date', 'user'));
+    }
+
+
+    /**
      * 申請一覧画面表示
      */
     public function showApplyList()
