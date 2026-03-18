@@ -10,7 +10,7 @@
 
 @section('main')
 <div class="content">
-    <form class="form" action="/attendance/detail/{{ $attendance->id }}" method="post">
+    <form class="form" action="/admin/attendance/{{ $attendance->id }}" method="post">
         @csrf
         <h2 class="heading">勤怠詳細</h2>
 

@@ -87,6 +87,41 @@ class AttendanceController extends Controller
     }
 
     /**
+     * 勤怠修正
+     */
+    public function update(AttendanceRequest $request, $id)
+    {
+        $start_time = $request['apply_start_time'];
+        $end_time = $request['apply_end_time'];
+        $note = $request['apply_note'];
+
+        $data = [
+            'start_time' => $start_time,
+            'end_time' => $end_time,
+            'note' => $note,
+        ];
+
+        Attendance::find($id)->update($data);
+
+        $break_ids = $request['break_ids'];
+        $apply_break_start_times = $request['apply_break_start_times'];
+        $apply_break_end_times = $request['apply_break_end_times'];
+
+        foreach ($break_ids as $index => $break_time_id) {
+            $break_data = [];
+
+            $break_data = [
+                'break_start_time' => $apply_break_start_times[$index],
+                'break_end_time' => $apply_break_end_times[$index],
+            ];
+
+            BreakTime::find($break_time_id)->update($break_data);
+        }
+
+        return redirect('/admin/attendance/' . $id);
+    }
+
+    /**
      * スタッフ一覧画面表示
      */
     public function showStaffList()
