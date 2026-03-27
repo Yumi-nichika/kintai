@@ -49,11 +49,11 @@
                     <tr>
                         <td>{{ config('status.' . $apply->status) }}</td>
                         <td>{{ $apply->user->name }}</td>
-                        <td>{{ \Carbon\Carbon::parse($apply->attendance->work_date)->format('Y/m/d') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($apply->apply_work_date)->format('Y/m/d') }}</td>
                         <td>{{ $apply->apply_note }}</td>
                         <td>{{ $apply->created_at->format('Y/m/d') }}</td>
                         <td>
-                            <a class="button_detail" href="/attendance/detail/{{ $apply->attendance_id }}">詳細</a>
+                            <a class="button_detail" href="/attendance/detail/{{ $apply->id }}">詳細</a>
                         </td>
                     </tr>
                     @endif

@@ -23,5 +23,13 @@ class UsersTableSeeder extends Seeder
             'is_admin' => 1,
         ];
         DB::table('users')->insert($param);
+
+        $param = [
+            'name' => 'テスト太郎',
+            'email' => 'tarou@test.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('password'),
+        ];
+        DB::table('users')->insert($param);
     }
 }

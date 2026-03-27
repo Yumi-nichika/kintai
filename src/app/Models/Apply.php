@@ -13,6 +13,7 @@ class Apply extends Model
         'user_id',
         'attendance_id',
         'status',
+        'apply_work_date',
         'apply_start_time',
         'apply_end_time',
         'apply_note'

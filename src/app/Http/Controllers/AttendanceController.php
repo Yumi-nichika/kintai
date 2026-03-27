@@ -223,4 +223,45 @@ class AttendanceController extends Controller
             'date' => $request->date
         ]);
     }
+
+
+    /**
+     * 勤怠申請（新規登録）
+     */
+    public function create(AttendanceRequest $request)
+    {
+        // appliesテーブルに登録
+        $apply = Apply::create([
+            'user_id' => auth()->id(),
+            'attendance_id' => null,
+            'apply_work_date' => $request->work_date,
+            'apply_start_time' => $request->apply_start_time,
+            'apply_end_time' => $request->apply_end_time,
+            'apply_note' => $request->apply_note,
+        ]);
+
+        $apply_id = $apply->id;
+
+        $break_ids = $request['break_ids'] ?? [];
+        $start_times = $request['apply_break_start_times'] ?? [];
+        $end_times = $request['apply_break_end_times'] ?? [];
+
+        // 休憩保存
+        foreach ($start_times as $index => $start) {
+
+            // 空はスキップ
+            if (!$start || !$end_times[$index]) {
+                continue;
+            }
+
+            ApplyBreakTime::create([
+                'apply_id' => $apply_id,
+                'break_time_id' => null,
+                'apply_break_start_time' => $start,
+                'apply_break_end_time' => $end_times[$index],
+            ]);
+        }
+
+        return redirect('/stamp_correction_request/list');
+    }
 }

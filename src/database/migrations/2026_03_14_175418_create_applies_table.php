@@ -18,6 +18,7 @@ class CreateAppliesTable extends Migration
             $table->foreignId('user_id');
             $table->foreignId('attendance_id')->nullable();
             $table->boolean('status')->default(false);
+            $table->date('apply_work_date');
             $table->time('apply_start_time');
             $table->time('apply_end_time');
             $table->text('apply_note');
