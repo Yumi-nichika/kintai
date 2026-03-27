@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class AdminMiddleware
+class CheckAdmin
 {
     /**
      * Handle an incoming request.
@@ -16,9 +16,9 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!auth()->check() || !auth()->user()->is_admin) {
-            return redirect('/attendance');
-        }
+        $request->merge([
+            'is_admin' => auth()->check() && auth()->user()->is_admin
+        ]);
 
         return $next($request);
     }

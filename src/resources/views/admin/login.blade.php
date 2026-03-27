@@ -7,8 +7,9 @@
 @section('main')
 <div class="content">
     <h1>管理者ログイン</h1>
-    <form class="form" action="/admin/login" method="post" novalidate>
+    <form class="form" action="/login" method="post" novalidate>
         @csrf
+        <input type="hidden" name="is_admin" value="1" />
         <div class="group">
             <div class="group-title">
                 メールアドレス

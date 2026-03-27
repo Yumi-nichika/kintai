@@ -16,7 +16,7 @@ class CreateAppliesTable extends Migration
         Schema::create('applies', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id');
-            $table->foreignId('attendance_id');
+            $table->foreignId('attendance_id')->nullable();
             $table->boolean('status')->default(false);
             $table->time('apply_start_time');
             $table->time('apply_end_time');

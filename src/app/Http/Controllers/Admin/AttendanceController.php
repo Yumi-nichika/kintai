@@ -14,6 +14,7 @@ use App\Http\Requests\AttendanceRequest;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttendanceController extends Controller
 {
@@ -170,14 +171,90 @@ class AttendanceController extends Controller
         return view('admin.staff-detail', compact('dates', 'attendances', 'date', 'user'));
     }
 
-
     /**
-     * 申請一覧画面表示
+     * スタッフ勤怠表CSV出力
      */
-    public function showApplyList()
+    public function export(Request $request, $id)
     {
-        $applies = Apply::with('user', 'attendance')->get();
-        return view('admin.apply-list', compact('applies'));
+        $date = Carbon::createFromFormat('Y-m', $request->month);
+
+        $start = $date->copy()->startOfMonth();
+        $end   = $date->copy()->endOfMonth();
+
+        $dates = CarbonPeriod::create($start, $end);
+
+        /* 休憩時間を先に合計 */
+        $breaks = DB::table('break_times')
+            ->selectRaw("attendance_id,
+            SUM(TIME_TO_SEC(TIMEDIFF(break_end_time, break_start_time))) as break_sec")
+            ->groupBy('attendance_id');
+
+
+        $attendances = DB::table('attendances as a')
+            ->selectRaw("a.id,
+            a.work_date,
+            a.start_time,
+            a.end_time,
+            TIME_FORMAT(SEC_TO_TIME(IFNULL(b.break_sec,0)),'%k:%i') as break_time,
+            TIME_FORMAT(SEC_TO_TIME(FLOOR((TIME_TO_SEC(TIMEDIFF(a.end_time,a.start_time)) - IFNULL(b.break_sec,0)) / 60) * 60),'%k:%i') as work_time")
+            ->leftJoinSub($breaks, 'b', function ($join) {
+                $join->on('a.id', '=', 'b.attendance_id');
+            })
+            ->where('a.user_id', $id)
+            ->whereBetween('a.work_date', [$start, $end])
+            ->get()
+            ->keyBy('work_date');
+
+        $response = new StreamedResponse(function () use ($dates, $attendances) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            // ヘッダー行
+            fputcsv($handle, [
+                '日付',
+                '出勤',
+                '退勤',
+                '休憩',
+                '合計'
+            ]);
+
+            // データ行
+            foreach ($dates as $d) {
+                $formattedDate = $d->isoFormat('MM/DD（ddd）');
+                $fdate = mb_convert_kana($formattedDate, 'n', 'UTF-8');
+
+                //勤怠がある場合
+                if (isset($attendances[$d->toDateString()])) {
+                    fputcsv($handle, [
+                        $fdate,
+                        substr($attendances[$d->toDateString()]->start_time, 0, 5),
+                        substr($attendances[$d->toDateString()]->end_time, 0, 5),
+                        $attendances[$d->toDateString()]->break_time,
+                        $attendances[$d->toDateString()]->work_time,
+                    ]);
+                }
+
+                //勤怠がない場合
+                else {
+                    fputcsv($handle, [
+                        $fdate,
+                        '',
+                        '',
+                        '',
+                        '',
+                    ]);
+                }
+            }
+            fclose($handle);
+        });
+
+        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+        $response->headers->set(
+            'Content-Disposition',
+            'attachment; filename="attendance_' . $id . "_" . $request->month . '.csv"'
+        );
+
+        return $response;
     }
 
     /**

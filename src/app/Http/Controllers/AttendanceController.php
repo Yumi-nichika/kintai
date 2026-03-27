@@ -131,21 +131,6 @@ class AttendanceController extends Controller
     }
 
     /**
-     * 申請一覧画面表示
-     */
-    public function showApplyList()
-    {
-        //管理者なら別コントローラーへ
-        if (auth()->user()->is_admin) {
-            return app(\App\Http\Controllers\Admin\AttendanceController::class)
-                ->showApplyList();
-        }
-
-        $applies = Apply::with('user', 'attendance')->where('user_id', auth()->id())->get();
-        return view('attendance.apply', compact('applies'));
-    }
-
-    /**
      * 勤怠詳細画面表示
      */
     public function showDetail($id)
@@ -224,5 +209,18 @@ class AttendanceController extends Controller
         }
 
         return redirect('/stamp_correction_request/list');
+    }
+
+    /**
+     * 勤怠詳細画面表示（新規登録）
+     */
+    public function showCreate(Request $request)
+    {
+        return view('attendance.detail', [
+            'attendance' => null,
+            'breaks' => [],
+            'flg' => 0,
+            'date' => $request->date
+        ]);
     }
 }

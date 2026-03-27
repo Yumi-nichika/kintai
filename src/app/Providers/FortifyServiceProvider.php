@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Fortify;
@@ -44,6 +46,22 @@ class FortifyServiceProvider extends ServiceProvider
 
         //ログイン時のバリデーションをカスタム
         $this->app->bind(FortifyLoginRequest::class, LoginRequest::class);
+
+        //認証ロジック（管理者・一般ユーザー分離）
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::where('email', $request->email)->first();
+
+            if ($user && Hash::check($request->password, $user->password)) {
+                //管理者ログイン：is_admin=1のユーザーのみ許可
+                if ($request->boolean('is_admin')) {
+                    return $user->is_admin ? $user : null;
+                }
+                //一般ユーザーログイン：管理者以外のみ許可
+                return !$user->is_admin ? $user : null;
+            }
+
+            return null;
+        });
 
         //連続ログインブロック
         RateLimiter::for('login', function (Request $request) {

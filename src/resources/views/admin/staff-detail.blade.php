@@ -70,6 +70,10 @@
             </tr>
             @endforeach
         </table>
+
+        <div class="button-area">
+            <a href="/admin/attendance/staff/export/{{ $user->id }}?month={{ $date->format('Y-m') }}" class="button button_black">CSV出力</a>
+        </div>
     </div>
 </div>
 @endsection
