@@ -19,7 +19,7 @@ class AttendancesTableSeeder extends Seeder
         $holidays = Yasumi::create('Japan', 2026);
 
         $start = Carbon::create(2026, 2, 1);
-        $end   = Carbon::create(2026, 2, 28);
+        $end   = Carbon::yesterday();
 
         for ($date = $start; $date->lte($end); $date->addDay()) {
             if ($date->isWeekday() && !$holidays->isHoliday($date)) {
