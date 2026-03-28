@@ -137,33 +137,39 @@ class AttendanceController extends Controller
     {
         $flg = 0;
 
-        $attendance = Apply::with('user')
-            ->selectRaw("attendance_id as id, user_id, apply_start_time as start_time, apply_end_time as end_time, apply_note as note")
-            ->where('attendance_id', $id)
+        $apply = Apply::with('user')->where('attendance_id', $id)
             ->where('status', 0)
             ->orderBy('created_at', 'desc')->first();
 
-        //承認待ちの申請あり
-        if ($attendance) {
+        //承認待ちあり
+        if ($apply) {
             $flg = 1;
 
-            $breaks = ApplyBreakTime::selectRaw("apply_break_start_time as break_start_time, apply_break_end_time as break_end_time")
-                ->where('apply_id', $attendance->id)
-                ->orderBy('break_time_id')
-                ->get();
-        }
+            $attendance = (object)[
+                'id' => $apply->attendance_id,
+                'user' => $apply->user,
+                'work_date' => $apply->apply_work_date,
+                'start_time' => $apply->apply_start_time,
+                'end_time' => $apply->apply_end_time,
+                'note' => $apply->apply_note,
+            ];
 
-        //承認待ちの申請なし
+            $breaks = ApplyBreakTime::where('apply_id', $apply->id)
+                ->get()
+                ->map(function ($b) {
+                    return (object)[
+                        'break_start_time' => $b->apply_break_start_time,
+                        'break_end_time' => $b->apply_break_end_time,
+                    ];
+                });
+        }
+        
+        //承認待ちなし
         else {
-            $attendance = Attendance::with('user')
-                ->where('id', $id)
-                ->first();
+            $attendance = Attendance::with('user')->findOrFail($id);
 
-            $breaks = BreakTime::where('attendance_id', $id)
-                ->orderBy('id')
-                ->get();
+            $breaks = BreakTime::where('attendance_id', $id)->get();
         }
-
 
         return view('attendance.detail', compact('attendance', 'breaks', 'flg'));
     }
@@ -175,6 +181,7 @@ class AttendanceController extends Controller
     {
         //appliesテーブルに登録するデータ
         $apply_data = $request->only([
+            'apply_work_date',
             'apply_start_time',
             'apply_end_time',
             'apply_note'
@@ -230,11 +237,22 @@ class AttendanceController extends Controller
      */
     public function create(AttendanceRequest $request)
     {
+        //attendancesテーブルに保存
+        $attendance = Attendance::create([
+            'user_id' => auth()->id(),
+            'work_date' => $request->apply_work_date,
+            'start_time' => $request->apply_start_time,
+            'end_time' => $request->apply_end_time,
+            'note' => $request->apply_note,
+        ]);
+
+        $attendance_id = $attendance->id;
+
         // appliesテーブルに登録
         $apply = Apply::create([
             'user_id' => auth()->id(),
-            'attendance_id' => null,
-            'apply_work_date' => $request->work_date,
+            'attendance_id' => $attendance_id,
+            'apply_work_date' => $request->apply_work_date,
             'apply_start_time' => $request->apply_start_time,
             'apply_end_time' => $request->apply_end_time,
             'apply_note' => $request->apply_note,
@@ -242,7 +260,6 @@ class AttendanceController extends Controller
 
         $apply_id = $apply->id;
 
-        $break_ids = $request['break_ids'] ?? [];
         $start_times = $request['apply_break_start_times'] ?? [];
         $end_times = $request['apply_break_end_times'] ?? [];
 
@@ -254,9 +271,15 @@ class AttendanceController extends Controller
                 continue;
             }
 
+            $break_time = BreakTime::create([
+                'attendance_id' => $attendance_id,
+                'break_start_time' => $start,
+                'break_end_time' => $end_times[$index],
+            ]);
+
             ApplyBreakTime::create([
                 'apply_id' => $apply_id,
-                'break_time_id' => null,
+                'break_time_id' => $break_time->id,
                 'apply_break_start_time' => $start,
                 'apply_break_end_time' => $end_times[$index],
             ]);

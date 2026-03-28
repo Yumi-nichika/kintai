@@ -65,6 +65,8 @@
                 <td>
                     @if($attendance)
                     <a class="button_detail" href="/admin/attendance/{{ $attendance->id }}">詳細</a>
+                    @else
+                    <a class="button_detail" href="/admin/attendance/create/{{ $user->id }}?date={{ $d->toDateString() }}">詳細</a>
                     @endif
                 </td>
             </tr>

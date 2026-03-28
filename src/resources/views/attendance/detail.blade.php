@@ -26,9 +26,10 @@
                 <td>
                     @if(isset($attendance))
                     {{ \Carbon\Carbon::parse($attendance->work_date)->isoFormat('YYYY年M月D日') }}
+                    <input type="hidden" name="apply_work_date" value="{{ $attendance->work_date }}">
                     @else
                     {{ \Carbon\Carbon::parse($date)->isoFormat('YYYY年M月D日') }}
-                    <input type="hidden" name="work_date" value="{{ $date }}">
+                    <input type="hidden" name="apply_work_date" value="{{ $date }}">
                     @endif
                 </td>
             </tr>

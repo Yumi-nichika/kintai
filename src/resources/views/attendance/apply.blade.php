@@ -53,7 +53,7 @@
                         <td>{{ $apply->apply_note }}</td>
                         <td>{{ $apply->created_at->format('Y/m/d') }}</td>
                         <td>
-                            <a class="button_detail" href="/attendance/detail/{{ $apply->id }}">詳細</a>
+                            <a class="button_detail" href="/attendance/detail/{{ $apply->attendance_id }}">詳細</a>
                         </td>
                     </tr>
                     @endif
