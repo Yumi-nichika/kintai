@@ -15,7 +15,7 @@
         <h2 class="heading">勤怠一覧</h2>
 
         <div class="calendar-nav">
-            <a class="calendar-link" href="?month={{ $date->copy()->subMonth()->format('Y-m') }}">
+            <a class="calendar-link" href="?month={{ $date->copy()->subMonthNoOverflow()->format('Y-m') }}">
                 ← 前月
             </a>
             <div class="calendar-center">
@@ -24,7 +24,7 @@
                     {{ $date->format('Y/m') }}
                 </span>
             </div>
-            <a class="calendar-link" href="?month={{ $date->copy()->addMonth()->format('Y-m') }}">
+            <a class="calendar-link" href="?month={{ $date->copy()->addMonthNoOverflow()->format('Y-m') }}">
                 翌月 →
             </a>
         </div>

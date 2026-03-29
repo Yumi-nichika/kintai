@@ -97,7 +97,7 @@ class AttendanceController extends Controller
     {
         $month = $request->month ?? now()->format('Y-m');
 
-        $date = Carbon::createFromFormat('Y-m', $month);
+        $date = Carbon::createFromFormat('Y-m-d', $month . '-01');
 
         $start = $date->copy()->startOfMonth();
         $end   = $date->copy()->endOfMonth();
@@ -163,7 +163,7 @@ class AttendanceController extends Controller
                     ];
                 });
         }
-        
+
         //承認待ちなし
         else {
             $attendance = Attendance::with('user')->findOrFail($id);
