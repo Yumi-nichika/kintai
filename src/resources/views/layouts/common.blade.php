@@ -26,9 +26,16 @@
                 <a class="button button_black" href="/stamp_correction_request/list">申請一覧</a>
                 @else
                 <!-- 一般ユーザー -->
+                @if($headerAttendance && $headerAttendance->end_time)
+                <!-- 退勤済み -->
+                <a class="button button_black" href="/attendance/list">今月の出勤一覧</a>
+                <a class="button button_black" href="/stamp_correction_request/list">申請一覧</a>
+                @else
+                <!-- 通常 -->
                 <a class="button button_black" href="/attendance">勤怠</a>
                 <a class="button button_black" href="/attendance/list">勤怠一覧</a>
                 <a class="button button_black" href="/stamp_correction_request/list">申請</a>
+                @endif
                 @endif
 
                 <!-- 共通 -->

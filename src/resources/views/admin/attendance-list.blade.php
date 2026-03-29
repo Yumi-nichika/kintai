@@ -12,7 +12,7 @@
 @section('main')
 <div class="content">
     <div class="list">
-        <h2 class="heading">{{ \Carbon\Carbon::now()->isoFormat('YYYY年M月D日') }}の勤怠</h2>
+        <h2 class="heading">{{ $date->isoFormat('YYYY年M月D日') }}の勤怠</h2>
 
         <div class="calendar-nav">
             <a class="calendar-link" href="?date={{ $date->copy()->subDay()->format('Y-m-d') }}">
