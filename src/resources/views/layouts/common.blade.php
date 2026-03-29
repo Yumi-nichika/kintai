@@ -17,6 +17,7 @@
                 <img src="{{ asset('img/logo.png') }}">
             </div>
 
+            @if (!request()->routeIs('verification.notice'))
             @auth
             <div class="header__right">
                 @if (Auth::user()->is_admin)
@@ -45,6 +46,7 @@
                 </form>
             </div>
             @endauth
+            @endif
         </div>
     </header>
     <main>
