@@ -34,6 +34,9 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
 
 //認証メール再送
 Route::post('/email/verification-notification', function (Request $request) {
+    if ($request->user()->hasVerifiedEmail()) {
+        return redirect('/attendance');
+    }
     $request->user()->sendEmailVerificationNotification();
     return back()->with('resent', 'verification-link-sent');
 })->middleware(['auth', 'throttle:6,1', 'redirect.admin'])->name('verification.send');

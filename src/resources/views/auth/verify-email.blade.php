@@ -12,10 +12,12 @@
         <div class="form-button">
             <a class="button button_gray" href="http://localhost:8025" target="_blank">認証はこちらから</a>
 
+            @unless (auth()->user()->hasVerifiedEmail())
             <form method="POST" action="{{ route('verification.send') }}">
                 @csrf
                 <button class="button_blue" type="submit">認証メールを再送する</button>
             </form>
+            @endunless
 
             @if (session('resent') == 'verification-link-sent')
             <p style="color: green;">

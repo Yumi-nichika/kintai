@@ -7,6 +7,9 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
 
+/**
+ * ログイン認証機能（管理者）
+ */
 class AdminLoginTest extends TestCase
 {
     use RefreshDatabase;
@@ -24,7 +27,8 @@ class AdminLoginTest extends TestCase
     }
 
     /**
-     * バリデーションエラーテスト
+     * メールアドレスが未入力の場合、バリデーションメッセージが表示される
+     * パスワードが未入力の場合、バリデーションメッセージが表示される
      */
     public function invalidLoginProvider()
     {
@@ -35,7 +39,7 @@ class AdminLoginTest extends TestCase
     }
 
     /**
-     * 登録されていない情報でのログインテスト
+     * 登録内容と一致しない場合、バリデーションメッセージが表示される
      */
     public function test_login_fails()
     {
@@ -52,7 +56,7 @@ class AdminLoginTest extends TestCase
     }
 
     /**
-     * ログインテスト
+     * ログイン成功
      */
     public function test_login_success()
     {

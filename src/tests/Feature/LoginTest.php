@@ -26,7 +26,8 @@ class LoginTest extends TestCase
     }
 
     /**
-     * バリデーションエラーテスト
+     * メールアドレスが未入力の場合、バリデーションメッセージが表示される
+     * パスワードが未入力の場合、バリデーションメッセージが表示される
      */
     public function invalidLoginProvider()
     {
@@ -37,7 +38,7 @@ class LoginTest extends TestCase
     }
 
     /**
-     * 登録されていない情報でのログインテスト
+     * 登録内容と一致しない場合、バリデーションメッセージが表示される
      */
     public function test_login_fails()
     {
@@ -53,7 +54,7 @@ class LoginTest extends TestCase
     }
 
     /**
-     * ログインテスト
+     * ログイン成功
      */
     public function test_login_success()
     {

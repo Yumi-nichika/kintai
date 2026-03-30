@@ -34,7 +34,11 @@ class RegisterTest extends TestCase
     }
 
     /**
-     * バリデーションエラーテスト
+     * 名前が未入力の場合、バリデーションメッセージが表示される
+     * メールアドレスが未入力の場合、バリデーションメッセージが表示される
+     * パスワードが8文字未満の場合、バリデーションメッセージが表示される
+     * パスワードが一致しない場合、バリデーションメッセージが表示される
+     * パスワードが未入力の場合、バリデーションメッセージが表示される
      */
     public function invalidRegisterProvider()
     {
@@ -48,14 +52,14 @@ class RegisterTest extends TestCase
         return [
             '名前が未入力' => [array_merge($valid, ['name' => '']), 'name', 'お名前を入力してください'],
             'メールが未入力' => [array_merge($valid, ['email' => '']), 'email', 'メールアドレスを入力してください'],
-            'パスワードが未入力' => [array_merge($valid, ['password' => '', 'password_confirmation' => '']), 'password', 'パスワードを入力してください'],
             'パスワードが7文字以下' => [array_merge($valid, ['password' => '1234567', 'password_confirmation' => '1234567']), 'password', 'パスワードは8文字以上で入力してください'],
+            'パスワードが未入力' => [array_merge($valid, ['password' => '', 'password_confirmation' => '']), 'password', 'パスワードを入力してください'],
             'パスワード不一致' => [array_merge($valid, ['password_confirmation' => 'different']), 'password', 'パスワードと一致しません'],
         ];
     }
 
     /**
-     * 会員登録成功テスト（データベース登録・メール認証誘導画面遷移・認証メール送信）
+     * フォームに内容が入力されていた場合、データが正常に保存される
      */
     public function test_register_success()
     {
@@ -77,7 +81,7 @@ class RegisterTest extends TestCase
     }
 
     /**
-     * 会員登録時に認証メールが送信されることのテスト
+     * 会員登録後、認証メールが送信される
      */
     public function test_register_sends_verification_email()
     {
@@ -97,7 +101,8 @@ class RegisterTest extends TestCase
     }
 
     /**
-     * メール認証誘導画面に「認証はこちらから」リンク（mailhog）が表示されるテスト
+     * メール認証誘導画面で「認証はこちらから」ボタンを押下するとメール認証サイトに遷移する
+     * （「認証はこちらから」リンク（mailhog）が表示される）
      */
     public function test_verify_email_page_has_mailhog_link()
     {
@@ -123,7 +128,8 @@ class RegisterTest extends TestCase
     }
 
     /**
-     * 認証メール内のリンクをクリックすると認証され、「勤怠登録画面」に遷移するテスト
+     * メール認証サイトのメール認証を完了すると、勤怠登録画面に遷移する
+     * （認証メール内のリンクをクリックすると認証され、「勤怠登録画面」に遷移する）
      */
     public function test_email_verification_redirects_to_attendance()
     {
