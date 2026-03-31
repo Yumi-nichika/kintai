@@ -96,9 +96,9 @@ php artisan key:generate
 パスワード：password
 ```
 
-phpMyAdmin:http://localhost:8080
+phpMyAdmin：http://localhost:8080
 
-mailhog:http://localhost:8025
+mailhog：http://localhost:8025
 
 # PHPUnitでの単体テスト実行時
 
