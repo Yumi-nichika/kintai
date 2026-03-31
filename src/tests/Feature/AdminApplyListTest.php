@@ -103,6 +103,14 @@ class AdminApplyListTest extends TestCase
         $response = $this->get('/stamp_correction_request/list');
         $response->assertStatus(200);
 
+        // ヘッダーが正しいこと
+        $response->assertSee('状態');
+        $response->assertSee('名前');
+        $response->assertSee('対象日時');
+        $response->assertSee('申請理由');
+        $response->assertSee('申請日時');
+        $response->assertSee('詳細');
+
         $content = $response->getContent();
         preg_match('/<div class="list wait">(.*?)<\/div>/s', $content, $waitMatches);
 
@@ -117,8 +125,17 @@ class AdminApplyListTest extends TestCase
      */
     public function test_approved_applies_displayed_in_approve_tab()
     {
-        $response = $this->get('/stamp_correction_request/list');
+        // 承認済みタブを開いて確認
+        $response = $this->get('/stamp_correction_request/list?tab=approve');
         $response->assertStatus(200);
+
+        // ヘッダーが正しいこと
+        $response->assertSee('状態');
+        $response->assertSee('名前');
+        $response->assertSee('対象日時');
+        $response->assertSee('申請理由');
+        $response->assertSee('申請日時');
+        $response->assertSee('詳細');
 
         $content = $response->getContent();
         preg_match('/<div class="list approve">(.*?)<\/div>/s', $content, $approveMatches);
@@ -162,9 +179,37 @@ class AdminApplyListTest extends TestCase
 
     /**
      * 修正申請の承認処理が正しく行われる
+     * 機能要件より、
+     * 管理者ユーザーの「修正申請一覧」で，”承認待ち”から”承認済み”に変更されていること
+     * 一般ユーザーの当該勤怠情報が更新され，修正申請の内容と一致すること
+     * 一般ユーザーの「修正申請一覧」で，”承認待ち”から”承認済み”に変更されていること
      */
     public function test_approve_updates_attendance_and_shows_approved()
     {
+        $pendingDate = Carbon::parse($this->attendance1->work_date)->format('Y/m/d');
+
+        // 承認前：管理者の修正申請一覧で承認待ちにあること
+        $adminWaitBefore = $this->get('/stamp_correction_request/list');
+        $adminWaitBefore->assertStatus(200);
+        preg_match('/<div class="list wait">(.*?)<\/div>/s', $adminWaitBefore->getContent(), $adminWaitBeforeMatches);
+        $this->assertStringContainsString($pendingDate, $adminWaitBeforeMatches[1]);
+
+        // 承認前：一般ユーザーの修正申請一覧で承認待ちにあること
+        $this->actingAs($this->user);
+        $userWaitBefore = $this->get('/stamp_correction_request/list');
+        $userWaitBefore->assertStatus(200);
+        preg_match('/<div class="list wait">(.*?)<\/div>/s', $userWaitBefore->getContent(), $userWaitBeforeMatches);
+        $this->assertStringContainsString($pendingDate, $userWaitBeforeMatches[1]);
+
+        // 承認前：一般ユーザーの勤怠一覧が修正前の内容であること
+        $listBefore = $this->get('/attendance/list');
+        $listBefore->assertStatus(200);
+        $listBefore->assertSee(mb_convert_kana('09:00', 'N'));
+        $listBefore->assertSee(mb_convert_kana('18:00', 'N'));
+
+        // 管理者に戻す
+        $this->actingAs($this->admin);
+
         // 承認ボタンを押す
         $response = $this->post('/stamp_correction_request/approve/' . $this->pendingApply->id);
         $response->assertRedirect('/stamp_correction_request/approve/' . $this->pendingApply->id);
@@ -198,12 +243,57 @@ class AdminApplyListTest extends TestCase
         $response->assertSee('11:30');
         $response->assertSee('12:30');
 
-        // 承認済みボタンが表示されること
+        // 承認済みが表示されること
         $response->assertSee('>承認済み</button>', false);
 
         // button-area内にsubmitボタンがないこと
         $content = $response->getContent();
         preg_match('/<div class="button-area">(.*?)<\/div>/s', $content, $buttonArea);
         $this->assertStringNotContainsString('type="submit"', $buttonArea[1]);
+
+        // 管理者の修正申請一覧で承認待ちから承認済みに変更されていること
+        $adminWaitResponse = $this->get('/stamp_correction_request/list');
+        $adminWaitResponse->assertStatus(200);
+        $adminWaitContent = $adminWaitResponse->getContent();
+        // 承認待ちタブに表示されないこと
+        preg_match('/<div class="list wait">(.*?)<\/div>/s', $adminWaitContent, $adminWaitMatches);
+        $this->assertStringNotContainsString($pendingDate, $adminWaitMatches[1]);
+
+        // 承認済みタブに表示されること
+        $adminApproveResponse = $this->get('/stamp_correction_request/list?tab=approve');
+        $adminApproveContent = $adminApproveResponse->getContent();
+        preg_match('/<div class="list approve">(.*?)<\/div>/s', $adminApproveContent, $adminApproveMatches);
+        $this->assertStringContainsString($pendingDate, $adminApproveMatches[1]);
+
+        // 一般ユーザーに切り替え
+        $this->actingAs($this->user);
+
+        // 一般ユーザーの勤怠一覧で申請内容が反映されていること
+        $listResponse = $this->get('/attendance/list');
+        $listResponse->assertStatus(200);
+        $listResponse->assertSee(mb_convert_kana('10:00', 'N'));
+        $listResponse->assertSee(mb_convert_kana('19:00', 'N'));
+
+        // 一般ユーザーの勤怠詳細で申請内容が反映されていること
+        $detailResponse = $this->get('/attendance/detail/' . $this->attendance1->id);
+        $detailResponse->assertStatus(200);
+        $detailResponse->assertSee('value="10:00"', false);
+        $detailResponse->assertSee('value="19:00"', false);
+        $detailResponse->assertSee('value="11:30"', false);
+        $detailResponse->assertSee('value="12:30"', false);
+
+        // 一般ユーザーの修正申請一覧で承認待ちから承認済みに変更されていること
+        $userWaitResponse = $this->get('/stamp_correction_request/list');
+        $userWaitResponse->assertStatus(200);
+        $userWaitContent = $userWaitResponse->getContent();
+        // 承認待ちタブに表示されないこと
+        preg_match('/<div class="list wait">(.*?)<\/div>/s', $userWaitContent, $userWaitMatches);
+        $this->assertStringNotContainsString($pendingDate, $userWaitMatches[1]);
+
+        // 承認済みタブに表示されること
+        $userApproveResponse = $this->get('/stamp_correction_request/list?tab=approve');
+        $userApproveContent = $userApproveResponse->getContent();
+        preg_match('/<div class="list approve">(.*?)<\/div>/s', $userApproveContent, $userApproveMatches);
+        $this->assertStringContainsString($pendingDate, $userApproveMatches[1]);
     }
 }

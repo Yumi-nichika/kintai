@@ -52,7 +52,7 @@
                     {{ mb_convert_kana(substr($attendance->end_time,0,5),'N') }}
                 </td>
                 <td>
-                    {{ mb_convert_kana($attendance->break_time,'N') }}
+                    {{ $attendance && $attendance->break_time !== '0:00' ? mb_convert_kana($attendance->break_time,'N') : '' }}
                 </td>
                 <td>
                     {{ mb_convert_kana($attendance->work_time,'N') }}

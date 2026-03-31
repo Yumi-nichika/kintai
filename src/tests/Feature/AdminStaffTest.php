@@ -38,6 +38,11 @@ class AdminStaffTest extends TestCase
         $response = $this->get('/admin/staff/list');
         $response->assertStatus(200);
 
+        // ヘッダーが正しいこと
+        $response->assertSee('名前');
+        $response->assertSee('メールアドレス');
+        $response->assertSee('月次勤怠');
+
         $response->assertSee('スタッフA');
         $response->assertSee('staff_a@example.com');
         $response->assertSee('スタッフB');
@@ -71,9 +76,18 @@ class AdminStaffTest extends TestCase
         $response->assertSee('スタッフAさんの勤怠');
         $response->assertSee($today->format('Y/m'));
 
+        // ヘッダーが正しいこと
+        $response->assertSee('日付');
+        $response->assertSee('出勤');
+        $response->assertSee('退勤');
+        $response->assertSee('休憩');
+        $response->assertSee('合計');
+        $response->assertSee('詳細');
+
         // 勤怠データが表示されていること
         $response->assertSee(mb_convert_kana('09:00', 'N'));
         $response->assertSee(mb_convert_kana('18:00', 'N'));
+        $response->assertSee(mb_convert_kana('1:00', 'N'));
     }
 
     /**
@@ -154,6 +168,85 @@ class AdminStaffTest extends TestCase
         // 休憩時刻が表示されていること
         $response->assertSee('value="12:00"', false);
         $response->assertSee('value="13:00"', false);
+    }
+
+    /**
+     * 機能要件より、勤怠情報がないフィールドは空白になっていること
+     * （まだ出勤しか打刻していない場合、他が空白であること）
+     */
+    public function test_end_time_is_blank_when_only_clocked_in()
+    {
+        $today = Carbon::today();
+
+        // 出勤のみで退勤なしの勤怠データ作成
+        Attendance::create([
+            'user_id' => $this->user1->id,
+            'work_date' => $today->toDateString(),
+            'start_time' => '09:00:00',
+            'end_time' => null,
+        ]);
+
+        $response = $this->get('/admin/attendance/staff/' . $this->user1->id);
+        $response->assertStatus(200);
+
+        // 出勤時刻が表示されていること
+        $response->assertSee(mb_convert_kana('09:00', 'N'));
+
+        // 退勤時刻が表示されていないこと
+        $response->assertDontSee(mb_convert_kana('18:00', 'N'));
+
+        // 出勤のみの日の行を取得し、休憩・合計が空白であること
+        $content = $response->getContent();
+        $dayLabel = mb_convert_kana($today->isoFormat('MM/DD（ddd）'), 'N');
+        preg_match('/<tr>\s*<td>\s*' . preg_quote($dayLabel, '/') . '\s*<\/td>(.*?)<\/tr>/s', $content, $matches);
+        $this->assertNotEmpty($matches);
+
+        preg_match_all('/<td>(.*?)<\/td>/s', $matches[1], $tdMatches);
+        $cells = $tdMatches[1];
+
+        // 退勤(index 1)・休憩(index 2)・合計(index 3) が空白であること
+        for ($i = 1; $i <= 3; $i++) {
+            $this->assertMatchesRegularExpression('/^\s*$/', $cells[$i], ($i + 1) . '番目のセルが空白ではありません');
+        }
+    }
+
+    /**
+     * 機能要件より、勤怠情報がないフィールドは空白になっていること
+     * （1日は打刻あり、2日は打刻なし）
+     */
+    public function test_no_attendance_day_shows_all_blank()
+    {
+        // 当月1日のみ勤怠データを作成し、2日は勤怠なしとする
+        $firstDay = Carbon::now()->startOfMonth();
+        $secondDay = $firstDay->copy()->addDay();
+
+        Attendance::create([
+            'user_id' => $this->user1->id,
+            'work_date' => $firstDay->toDateString(),
+            'start_time' => '09:00:00',
+            'end_time' => '18:00:00',
+        ]);
+
+        $response = $this->get('/admin/attendance/staff/' . $this->user1->id);
+        $response->assertStatus(200);
+
+        // 勤怠なしの日（2日）の行を取得し、出勤・退勤・休憩・合計が空白であること
+        $content = $response->getContent();
+        $secondDayLabel = mb_convert_kana($secondDay->isoFormat('MM/DD（ddd）'), 'N');
+        preg_match('/<tr>\s*<td>\s*' . preg_quote($secondDayLabel, '/') . '\s*<\/td>(.*?)<\/tr>/s', $content, $matches);
+
+        $this->assertNotEmpty($matches, '勤怠なしの日の行が見つかりません');
+
+        $rowContent = $matches[1];
+
+        // 各tdの中身を取得
+        preg_match_all('/<td>(.*?)<\/td>/s', $rowContent, $tdMatches);
+        $cells = $tdMatches[1];
+
+        // 出勤・退勤・休憩・合計の4セルが空白であること
+        for ($i = 0; $i < 4; $i++) {
+            $this->assertMatchesRegularExpression('/^\s*$/', $cells[$i], ($i + 1) . '番目のセルが空白ではありません');
+        }
     }
 
     /**

@@ -226,7 +226,7 @@ class AttendanceController extends Controller
 
         $user = User::find($id);
 
-        return view('admin.staff-detail', compact('dates', 'attendances', 'date', 'user'));
+        return view('admin.staff-monthly-list', compact('dates', 'attendances', 'date', 'user'));
     }
 
     /**

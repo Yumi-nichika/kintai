@@ -66,6 +66,14 @@ class AdminAttendanceListTest extends TestCase
         $response = $this->get('/admin/attendance/list?date=' . $today->format('Y-m-d'));
         $response->assertStatus(200);
 
+        // ヘッダーが正しいこと
+        $response->assertSee('名前');
+        $response->assertSee('出勤');
+        $response->assertSee('退勤');
+        $response->assertSee('休憩');
+        $response->assertSee('合計');
+        $response->assertSee('詳細');
+
         // 両ユーザーの名前が表示されていること
         $response->assertSee('ユーザーA');
         $response->assertSee('ユーザーB');
@@ -136,5 +144,43 @@ class AdminAttendanceListTest extends TestCase
         // 翌日の日付が表示されていること
         $response->assertSee($tomorrow->isoFormat('YYYY年M月D日'));
         $response->assertSee($tomorrow->format('Y/m/d'));
+    }
+
+    /**
+     * 機能要件より、勤怠情報がないフィールドは空白になっていること
+     * （まだ出勤しか打刻していない場合、他が空白であること）
+     */
+    public function test_end_time_is_blank_when_only_clocked_in()
+    {
+        $today = Carbon::today();
+
+        $user = User::factory()->create(['name' => '出勤のみユーザー']);
+
+        // 出勤のみで退勤なしの勤怠データ作成
+        Attendance::create([
+            'user_id' => $user->id,
+            'work_date' => $today->toDateString(),
+            'start_time' => '09:00:00',
+            'end_time' => null,
+        ]);
+
+        $response = $this->get('/admin/attendance/list?date=' . $today->format('Y-m-d'));
+        $response->assertStatus(200);
+
+        // 出勤時刻が表示されていること
+        $response->assertSee(mb_convert_kana('09:00', 'N'));
+
+        // 該当ユーザーの行を取得し、退勤・休憩・合計が空白であること
+        $content = $response->getContent();
+        preg_match('/<tr>\s*<td>\s*出勤のみユーザー\s*<\/td>(.*?)<\/tr>/s', $content, $matches);
+        $this->assertNotEmpty($matches);
+
+        preg_match_all('/<td>(.*?)<\/td>/s', $matches[1], $tdMatches);
+        $cells = $tdMatches[1];
+
+        // 退勤(index 1)・休憩(index 2)・合計(index 3) が空白であること
+        for ($i = 1; $i <= 3; $i++) {
+            $this->assertMatchesRegularExpression('/^\s*$/', $cells[$i], ($i + 1) . '番目のセルが空白ではありません');
+        }
     }
 }
